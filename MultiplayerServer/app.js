@@ -5,26 +5,36 @@ var shortid = require("shortid");
 
 
 console.log('Server connected');
-var players = 0;
+var players = [];
+var playerCount = 0;
 io.on('connection', function(socket){
     console.log('client connected');
-    
+
+    var thisClientId = shortid.generate();
+    players.push(thisClientId);
+    playerCount++;
+
     //spawn all newly joined players
-    socket.broadcast.emit('spawn');
-    players++;
+    socket.broadcast.emit('spawn', {id:thisClientId});
+   
 
-    for(var i = 0; i<players; i++){
-        //spawns player character
-        socket.emit('spawn');
-        console.log('spawning player');
-    }
+    players.forEach(function(playerId){
 
+        if(playerId == thisClientId){
+            return;
+        }
+
+        socket.emit('spawn', {id:playerId});
+        console.log('spawning player of id: ', playerId);
+    });
+    
     socket.on('yolo', function(data){
         console.log('You only yolo yolo');
         console.log(data);
     });
 
     socket.on('move', function(data){
+        data.id = thisClientId;
         console.log("player is moving", JSON.stringify(data));
         socket.broadcast.emit('move', data);
     });
