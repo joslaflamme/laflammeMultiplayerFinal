@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using SocketIO;
+using UnityEngine.UI;
 using System;
 
 public class Network : MonoBehaviour
@@ -10,7 +11,10 @@ public class Network : MonoBehaviour
     static SocketIOComponent socket;
     public GameObject playerPrefab;
     public GameObject localPlayer;
+    public GameObject scoreBoxPrefab;
+    public GameObject scoreContainer;
     Dictionary<string, GameObject> players;
+    Dictionary<string, GameObject> scores;
 
 
     // Start is called before the first frame update
@@ -25,9 +29,26 @@ public class Network : MonoBehaviour
         socket.On("requestPosition", OnRequestPosition);
         socket.On("updatePosition", OnUpdatePosition);
 
+        socket.On("updateScore", OnUpdateScore);
+
         players = new Dictionary<string, GameObject>();
+        scores = new Dictionary<string, GameObject>();
     }
 
+    private void OnUpdateScore(SocketIOEvent e)
+    {
+        var id = e.data["id"].ToString();
+        var score = scores[id];
+        var nscore = e.data["score"];
+        //var nScore = 
+
+    }
+    public void changeScore(int score)
+    {
+        JSONObject data = new JSONObject();
+        data.AddField("score", score);
+        socket.Emit("updateScore", data);
+    }
     private void OnUpdatePosition(SocketIOEvent e)
     {
         var id = e.data["id"].ToString();
@@ -44,8 +65,9 @@ public class Network : MonoBehaviour
 
     void OnSpawned(SocketIOEvent e)
     {
-
         var player = Instantiate(playerPrefab);
+        var scorebox = Instantiate(scoreBoxPrefab) as GameObject;
+        scorebox.transform.parent = scoreContainer.transform;
         Debug.Log("Spawned" + e.data);
         players.Add(e.data["id"].ToString(), player);
         Debug.Log(players.Count);
@@ -75,7 +97,10 @@ public class Network : MonoBehaviour
     private void OnDisconnected(SocketIOEvent e)
     {
         var player = players[e.data["id"].ToString()];
+        var score = scores[e.data["id"].ToString()];
         Destroy(player);
+        Destroy(score);
+        scores.Remove(e.data["id"].ToString());
         players.Remove(e.data["id"].ToString());
         
     }

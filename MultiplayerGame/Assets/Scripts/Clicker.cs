@@ -14,11 +14,11 @@ public class Clicker : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (Input.GetButtonDown("Fire1"))
-        {
-            Debug.Log("Clicking Stuff");
-            Clicked();
-        }
+        //if (Input.GetButtonDown("Fire1"))
+        //{
+        //    Debug.Log("Clicking Stuff");
+        //    Clicked();
+        //}
     }
 
     private void Clicked()
